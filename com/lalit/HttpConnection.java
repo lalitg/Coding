@@ -11,7 +11,13 @@ class RequestGetSender implements Runnable {
 	RequestGetSender(HttpConnection httpCon){
 		con = httpCon;
 	}
-	public void run (){try{con.sendGet();}catch(Exception e){}}
+	public void run (){
+		try {
+			long before = System.currentTimeMillis();
+			con.sendGet();
+			long after = System.currentTimeMillis();
+			System.out.println(" total time in call "+(after-before));
+		}catch(Exception e){}}
 
 }
 class RequestPostSender implements Runnable {
@@ -19,7 +25,13 @@ class RequestPostSender implements Runnable {
         RequestPostSender(HttpConnection httpCon){
                 con = httpCon;
         }
-        public void run (){try{con.sendPost();}catch(Exception e){}}
+        public void run (){
+		try{
+                        long before = System.currentTimeMillis();
+			con.sendPost();
+                        long after = System.currentTimeMillis();
+                        System.out.println(" total time in call "+(after-before));
+		}catch(Exception e){}}
 
 }
 public class HttpConnection {
@@ -29,15 +41,20 @@ public class HttpConnection {
 	public static void main(String[] args) throws Exception {
 
 		HttpConnection http = new HttpConnection();
-		//Thread[] get_Thread = new Thread[10];
-		//Thread[] post_Thread = new Thread[10];
+		Thread[] get_Thread = new Thread[100];
+		Thread[] post_Thread = new Thread[100];
 		RequestGetSender getSend = new RequestGetSender(http);
 		RequestPostSender postSend = new RequestPostSender(http);
-		Thread th = new Thread(getSend);
-		th.start();
-		th = new Thread(postSend);
-		th.start();
+	
+		for(int i=0; i<100; i++){
+			get_Thread[i] = new Thread(getSend);
+			post_Thread[i] = new Thread(postSend);
+		}	
 		
+		for(int i=0; i<100; i++){
+		      	get_Thread[i].start();
+			post_Thread[i].start();
+		}
 			//http.sendGet();
         	        //http.sendPost();
 	}
