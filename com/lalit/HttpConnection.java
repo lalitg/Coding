@@ -4,6 +4,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.io.BufferedReader;
 import javax.net.ssl.HttpsURLConnection;
+import java.util.List;
+import java.util.ArrayList;
 //import org.json.simple.JSONObject;
 
 class RequestGetSender implements Runnable {
@@ -16,7 +18,8 @@ class RequestGetSender implements Runnable {
 			long before = System.currentTimeMillis();
 			con.sendGet();
 			long after = System.currentTimeMillis();
-			System.out.println(" total time in call "+(after-before));
+			//System.out.println(" total time in call "+(after-before));
+			con.addToGet(after-before);
 		}catch(Exception e){}}
 
 }
@@ -30,13 +33,14 @@ class RequestPostSender implements Runnable {
                         long before = System.currentTimeMillis();
 			con.sendPost();
                         long after = System.currentTimeMillis();
-                        System.out.println(" total time in call "+(after-before));
+                        //System.out.println(" total time in call "+(after-before));
+			con.addToPost(after-before);
 		}catch(Exception e){}}
 
 }
 public class HttpConnection {
-
-	private final String USER_AGENT = "Mozilla/5.0";
+	List<Long> getTimeList = new ArrayList<Long>();
+	List<Long> postTimeList = new ArrayList<Long>();
 
 	public static void main(String[] args) throws Exception {
 
@@ -55,10 +59,77 @@ public class HttpConnection {
 		      	get_Thread[i].start();
 			post_Thread[i].start();
 		}
-			//http.sendGet();
-        	        //http.sendPost();
+		
+		for(int i=0; i<100; i++){
+			get_Thread[i].join();
+		}
+		for(int i=0; i<100; i++){
+			post_Thread[i].join();
+		}
+		long ten, fifty, ninty, nintyfive, nintynine, total;
+		ten=fifty=ninty=nintyfive=nintynine=total=0;
+		for(int i=0; i<100; i++){
+			long time = http.getTimeList.get(i);
+			if(i<10)ten+=time;
+			if(i<50)fifty+=time;
+			if(i<90)ninty+=time;
+			if(i<95)nintyfive+=time;
+			if(i<99)nintynine+=time;
+			total+=time;
+		}
+		double mean = total/100;
+		double sd = 0;
+		double diff = 0;
+		for(int i=0; i<100; i++) {
+			diff = http.getTimeList.get(i) - mean;
+			sd+= diff * diff;
+		}
+		sd = Math.sqrt(sd);
+		System.out.println(" Get Api stats in milli seconds ");
+		System.out.println(" 10th percentile "+ten);
+		System.out.println(" 50th percentile "+fifty);
+		System.out.println(" 90th percentile "+ninty);
+		System.out.println(" 95th percentile "+nintyfive);
+		System.out.println(" 99th percentile "+nintynine);
+		System.out.println(" mean "+mean);
+		System.out.println(" Standard Deviation "+sd);
+                
+	        ten=fifty=ninty=nintyfive=nintynine=total=0;
+                for(int i=0; i<100; i++){
+                        long time = http.postTimeList.get(i);
+                        if(i<10)ten+=time;
+                        if(i<50)fifty+=time;
+                        if(i<90)ninty+=time;
+                        if(i<95)nintyfive+=time;
+                        if(i<99)nintynine+=time;
+                        total+=time;
+                }
+                mean = total/100;
+                sd = 0;
+                diff = 0;
+                for(int i=0; i<100; i++) {
+                        diff = http.getTimeList.get(i) - mean;
+                        sd+= diff * diff;
+                }
+                sd = Math.sqrt(sd);
+		System.out.println(" Post Api stats in milli seconds ");
+                System.out.println(" 10th percentile "+ten);
+                System.out.println(" 50th percentile "+fifty);
+                System.out.println(" 90th percentile "+ninty);
+                System.out.println(" 95th percentile "+nintyfive);
+                System.out.println(" 99th percentile "+nintynine);
+                System.out.println(" mean "+mean);
+                System.out.println(" Standard Deviation "+sd);
+
+	}
+	
+	public synchronized void  addToGet(long time){
+		getTimeList.add(time);
 	}
 
+	public synchronized void addToPost(long time){
+                postTimeList.add(time);
+        }
 // HTTP GET request
 	public void sendGet() throws Exception {
 
@@ -74,7 +145,7 @@ public class HttpConnection {
 		con.setRequestProperty("X-Surya-Email-Id", "lalit0509@gmail.com");
 
 		int responseCode = con.getResponseCode();
-		System.out.println("\nSending 'GET' request to URL : " + url);
+		/*System.out.println("\nSending 'GET' request to URL : " + url);
 		System.out.println("Response Code : " + responseCode);
 
 		BufferedReader in = new BufferedReader(
@@ -88,8 +159,8 @@ public class HttpConnection {
 		in.close();
 
 		//print result
-		System.out.println(response.toString());
-
+		//System.out.println(response.toString());
+		*/
 		}
 	// HTTP POST request
 	public void sendPost() throws Exception {
@@ -115,7 +186,7 @@ public class HttpConnection {
 		wr.close();
 
 		int responseCode = con.getResponseCode();
-		System.out.println("\nSending 'POST' request to URL : " + url);
+		/*System.out.println("\nSending 'POST' request to URL : " + url);
 		System.out.println("Response Code : " + responseCode);
 
 		BufferedReader in = new BufferedReader(
@@ -129,7 +200,7 @@ public class HttpConnection {
 		in.close();
 		
 		//print result
-		System.out.println(response.toString());
+		System.out.println(response.toString());*/
 
 	}
 
